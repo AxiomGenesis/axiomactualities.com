@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom Actualities — Sovereign Code Extraction</title>
+  <meta name="description" content="Local-first code and LaTeX extraction. Camera, voice, handwriting to code. Zero cloud. Zero tracking. Everything yours. Built by Landon Hill.">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta property="og:title" content="Axiom Actualities — Sovereign Code Extraction">
+  <meta property="og:description" content="Extract code and LaTeX from photos, voice, video, and handwriting. 100% local. Zero cloud. Built by Axiom Genesis.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://axiomactualities.com">
+  <link rel="canonical" href="https://axiomactualities.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a1a;
+      --bg-card: #111128;
+      --bg-card-hover: #161640;
+      --border: #1e1e4a;
+      --text: #e0e0f0;
+      --text-dim: #8888aa;
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.3);
+      --green: #22c55e;
+      --green-glow: rgba(34, 197, 94, 0.2);
+      --gold: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.2);
+      --cyan: #06b6d4;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 10, 26, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--purple); }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--purple) !important;
+      color: #fff !important;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      transition: opacity 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.9; }
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 50% 30%, var(--purple-glow) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; max-width: 800px; }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      color: var(--purple);
+      font-weight: 500;
+      margin-bottom: 2rem;
+    }
+    .hero-badge .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+    .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--purple);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--purple-glow);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--purple-glow); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--purple); background: rgba(168, 85, 247, 0.05); }
+
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+      justify-content: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .num {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--purple);
+    }
+    .hero-stat .label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.2rem;
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 6rem 2rem; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--purple);
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .section-desc {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(168, 85, 247, 0.3);
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+    }
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+      background: rgba(168, 85, 247, 0.1);
+    }
+    .feature-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .feature-card p {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* ── SOVEREIGN BANNER ── */
+    .sovereign {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(6, 182, 212, 0.05));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .sovereign-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .sovereign-points { display: flex; flex-direction: column; gap: 1.5rem; }
+    .sovereign-point {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .sovereign-point .check {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      border-radius: 8px;
+      background: var(--green-glow);
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-top: 2px;
+    }
+    .sovereign-point h4 { font-weight: 600; margin-bottom: 0.2rem; }
+    .sovereign-point p { color: var(--text-dim); font-size: 0.9rem; }
+
+    .terminal-preview {
+      background: #0d0d20;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow: hidden;
+    }
+    .terminal-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .t-red { background: #ff5f57; }
+    .t-yel { background: #febc2e; }
+    .t-grn { background: #28c840; }
+    .t-prompt { color: var(--green); }
+    .t-cmd { color: var(--purple); }
+    .t-out { color: var(--text-dim); }
+    .t-warn { color: var(--gold); }
+    .t-ok { color: var(--green); }
+
+    /* ── PRICING ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .price-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .price-card:hover {
+      border-color: rgba(168, 85, 247, 0.4);
+      transform: translateY(-4px);
+    }
+    .price-card.featured {
+      border-color: var(--purple);
+      box-shadow: 0 0 40px var(--purple-glow);
+    }
+    .price-card.founder {
+      border-color: var(--gold);
+      box-shadow: 0 0 40px var(--gold-glow);
+    }
+    .price-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--purple);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.3rem 1rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .price-badge.gold { background: var(--gold); color: #000; }
+    .price-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .price-card .price {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin: 1rem 0;
+    }
+    .price-card .price span {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-dim);
+    }
+    .price-card .price-note {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 1.5rem;
+    }
+    .price-card ul {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+    .price-card li {
+      padding: 0.4rem 0;
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+    .price-card li::before {
+      content: '\2713';
+      color: var(--green);
+      font-weight: 700;
+      min-width: 16px;
+    }
+    .price-card .btn { width: 100%; justify-content: center; }
+    .platform-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .platform-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .platform-btn.active {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--purple);
+      color: var(--purple);
+    }
+    .trial-link {
+      display: block;
+      text-align: center;
+      margin-top: 0.75rem;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .trial-link:hover { color: var(--purple); }
+
+    /* ── CLI SHOWCASE ── */
+    .cli-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    .cli-cmd {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.2s;
+    }
+    .cli-cmd:hover { border-color: rgba(168, 85, 247, 0.3); }
+    .cli-cmd code {
+      color: var(--purple);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .cli-cmd p {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      margin-top: 0.4rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+    .footer-brand {
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .footer-brand span { color: var(--purple); }
+    .footer-text {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+    .footer-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    .footer-links a:hover { color: var(--purple); }
+    .footer-quote {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-style: italic;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: rgba(10, 10, 26, 0.98);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        gap: 1rem;
+      }
+      .mobile-menu-btn { display: block; }
+      .hero-stats { flex-direction: column; gap: 1.5rem; }
+      .sovereign-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
+      .hero h1 { font-size: 2.2rem; }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════ NAV ════════ -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Axiom <span>Actualities</span></a>
+    <button class="mobile-menu-btn" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#terminal">Terminal</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#pricing" class="nav-cta">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════ HERO ════════ -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Sovereign Edition — All Features Unlocked
+    </div>
+    <h1>Extract Code.<br><span class="gradient">Stay Sovereign.</span></h1>
+    <p>Camera, voice, video, and handwriting to code and LaTeX. 100% local. Zero cloud. Zero tracking. Everything stays on your device.</p>
+    <div class="hero-buttons">
+      <a href="#pricing" class="btn btn-primary">View Editions</a>
+      <a href="#features" class="btn btn-secondary">See Features</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">14</div>
+        <div class="label">Sovereign Features</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">35+</div>
+        <div class="label">CLI Commands</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">15,540</div>
+        <div class="label">Test Assertions Passed</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">0</div>
+        <div class="label">Data Sent to Cloud</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ FEATURES ════════ -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">Capabilities</div>
+    <h2 class="section-title">14 Sovereign Features</h2>
+    <p class="section-desc">Every feature runs locally on your device. No accounts, no servers, no data collection. Your code, your math, your device.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">&#128247;</div>
+        <h3>Camera Extraction</h3>
+        <p>Photograph code or equations from textbooks, whiteboards, or screens. OCR extracts text and converts to clean code or LaTeX instantly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#127908;</div>
+        <h3>Voice to Code &amp; LaTeX</h3>
+        <p>Speak equations to get LaTeX (all editions) or describe code in plain English to get source code (Developer+). Vosk offline engine — no internet required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#127916;</div>
+        <h3>Video Frame Extraction</h3>
+        <p>Capture frames from lecture videos or tutorials. Each frame is OCR-scanned and combined into clean, editable output.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#9997;&#65039;</div>
+        <h3>The Blackboard</h3>
+        <p>Handwriting canvas with touch/stylus support. Draw equations, tap Extract, and get formatted LaTeX output.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128218;</div>
+        <h3>Lecture Mode</h3>
+        <p>Real-time capture during lectures. Switch between LaTeX and Code modes on the fly. Every entry timestamped automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128737;&#65039;</div>
+        <h3>Sentinel Defense</h3>
+        <p>Always-on code security scanning. 12 threat patterns detected in real-time — SQL injection, XSS, command injection, and more.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128065;&#65039;</div>
+        <h3>Shadow Logic</h3>
+        <p>8-detector predictive trap detection. Catches infinite loops, deadlocks, off-by-one errors, and recursive traps before you save.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128256;</div>
+        <h3>Universal Suture</h3>
+        <p>Cross-language code translation. Convert between Python, JavaScript, TypeScript, Java, Go, Rust, C++, Ruby, Swift, and Kotlin.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128274;</div>
+        <h3>Axiom Vault</h3>
+        <p>AES-256 encrypted local knowledge base. Store code snippets, notes, and solutions with tags and full-text search.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128295;</div>
+        <h3>The Forge</h3>
+        <p>Custom code template system. 6 built-in scaffolds plus create your own. Variables with {{placeholder}} syntax.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#9939;&#65039;</div>
+        <h3>Command Chains</h3>
+        <p>Multi-step automated pipelines. Chain OCR, clean, convert, lint, fix, and save into one-tap workflows.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128100;</div>
+        <h3>Peer P2P Sharing</h3>
+        <p>Share code over local WiFi — zero internet required. Direct device-to-device transfer. Stays sovereign.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SOVEREIGN ════════ -->
+<section class="sovereign">
+  <div class="section-inner">
+    <div class="sovereign-grid">
+      <div>
+        <div class="section-label">Philosophy</div>
+        <h2 class="section-title">100% Local. Zero Compromise.</h2>
+        <p class="section-desc">Every byte of your data stays on your device. No accounts. No telemetry. No cloud sync. This is software you own.</p>
+        <div class="sovereign-points">
+          <div class="sovereign-point">
+            <div class="check">&#10003;</div>
+            <div>
+              <h4>No Accounts Required</h4>
+              <p>Install and use. No email, no sign-up, no login.</p>
+            </div>
+          </div>
+          <div class="sovereign-point">
+            <div class="check">&#10003;</div>
+            <div>
+              <h4>No Network Calls</h4>
+              <p>Zero HTTP requests. OCR, voice, and code processing all happen on-device.</p>
+            </div>
+          </div>
+          <div class="sovereign-point">
+            <div class="check">&#10003;</div>
+            <div>
+              <h4>Sentinel-Guarded</h4>
+              <p>Every file save is scanned for 12 security threat patterns before writing to disk.</p>
+            </div>
+          </div>
+          <div class="sovereign-point">
+            <div class="check">&#10003;</div>
+            <div>
+              <h4>Your Files, Your Storage</h4>
+              <p>All output saved to your device's filesystem. Export anything, anytime.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="terminal-preview">
+        <div class="terminal-bar">
+          <span class="terminal-dot t-red"></span>
+          <span class="terminal-dot t-yel"></span>
+          <span class="terminal-dot t-grn"></span>
+        </div>
+        <span class="t-prompt">$</span> <span class="t-cmd">lb status</span><br>
+        <span class="t-out">Edition: Founder | GOD_MODE: ON</span><br>
+        <span class="t-ok">Sentinel: ACTIVE | Threats: 0</span><br>
+        <span class="t-out">Sterile Mode: ENFORCED</span><br><br>
+
+        <span class="t-prompt">$</span> <span class="t-cmd">lb shadow</span><br>
+        <span class="t-warn">Scanning edit buffer...</span><br>
+        <span class="t-ok">Shadow Logic: CLEAR (0 traps)</span><br><br>
+
+        <span class="t-prompt">$</span> <span class="t-cmd">lb translate python</span><br>
+        <span class="t-out">Detected: JavaScript</span><br>
+        <span class="t-ok">Translated to Python (14 lines)</span><br><br>
+
+        <span class="t-prompt">$</span> <span class="t-cmd">lb vault save "sort algo" #python</span><br>
+        <span class="t-ok">Saved to Axiom Vault (encrypted)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ TERMINAL ════════ -->
+<section id="terminal">
+  <div class="section-inner">
+    <div class="section-label">Logic-Butter CLI</div>
+    <h2 class="section-title">35+ Commands. One Terminal.</h2>
+    <p class="section-desc">The Actualities Terminal puts a full development toolkit at your fingertips. Type <code style="color:var(--purple)">lb help</code> to see everything.</p>
+
+    <div class="cli-grid">
+      <div class="cli-cmd">
+        <code>lb fix</code>
+        <p>Auto-fix syntax and structure</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb shadow</code>
+        <p>Predictive trap detection</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb translate &lt;lang&gt;</code>
+        <p>Cross-language translation</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb vault save</code>
+        <p>Encrypt &amp; store to vault</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb forge &lt;template&gt;</code>
+        <p>Scaffold from templates</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb chain run &lt;name&gt;</code>
+        <p>Execute multi-step pipeline</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb architect &lt;desc&gt;</code>
+        <p>Generate full project scaffold</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb share</code>
+        <p>P2P share over local WiFi</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb record start</code>
+        <p>Record terminal session</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb ghost</code>
+        <p>View previous code version</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb passport</code>
+        <p>Show ownership proof</p>
+      </div>
+      <div class="cli-cmd">
+        <code>lb sentinel</code>
+        <p>Security status &amp; scan history</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ PRICING ════════ -->
+<section id="pricing">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Editions</div>
+    <h2 class="section-title" style="margin-left:auto;margin-right:auto;">Choose Your Edition</h2>
+    <p class="section-desc" style="margin-left:auto;margin-right:auto;">One-time purchase. No subscriptions. No recurring fees. Own it forever.</p>
+
+    <div class="pricing-grid">
+
+      <!-- ACADEMIC -->
+      <div class="price-card">
+        <h3>Academic</h3>
+        <div class="price">$150 <span>one-time</span></div>
+        <div class="price-note">Camera, voice, and handwriting extraction</div>
+        <div class="platform-toggle">
+          <button class="platform-btn active" onclick="setPlatform(this,'academic','mobile')">Mobile</button>
+          <button class="platform-btn" onclick="setPlatform(this,'academic','pc')">PC</button>
+        </div>
+        <ul>
+          <li>Camera &amp; Gallery OCR extraction</li>
+          <li>Voice-to-LaTeX</li>
+          <li>Lecture Mode with timestamps</li>
+          <li>Video frame extraction</li>
+          <li>The Blackboard (handwriting)</li>
+          <li>Axiom Vault (encrypted storage)</li>
+          <li>Auto Mode (10 smart structures)</li>
+          <li>Sentinel Defense (12 threat patterns)</li>
+          <li>Shadow Logic (trap detection)</li>
+          <li>7 sovereign fonts</li>
+        </ul>
+        <a href="https://buy.polar.sh/polar_cl_egS16BXid2sR5KQeIpdKR8Kg4rXdDoXhQozAX3WPZPY" class="btn btn-secondary" id="academic-buy">Buy Academic</a>
+        <a href="https://buy.polar.sh/polar_cl_OjonSq6o6i4Mi8DH0CTUzQiWswNCrLReZQDt726RWJ6" class="trial-link" id="academic-trial">Start 7-day free trial</a>
+      </div>
+
+      <!-- DEVELOPER -->
+      <div class="price-card featured">
+        <div class="price-badge">Most Popular</div>
+        <h3>Developer</h3>
+        <div class="price">$250 <span>one-time</span></div>
+        <div class="price-note">Full sovereign development terminal</div>
+        <div class="platform-toggle">
+          <button class="platform-btn active" onclick="setPlatform(this,'developer','mobile')">Mobile</button>
+          <button class="platform-btn" onclick="setPlatform(this,'developer','pc')">PC</button>
+        </div>
+        <ul>
+          <li>Everything in Academic</li>
+          <li>Actualities Terminal (Logic-Butter CLI)</li>
+          <li>35+ terminal commands</li>
+          <li>Universal Suture (10-language translation)</li>
+          <li>The Forge (code templates)</li>
+          <li>Command Chains (pipelines)</li>
+          <li>Architect (project scaffolding)</li>
+          <li>Session Replay (record &amp; playback)</li>
+          <li>Sentinel Playbook (security education)</li>
+          <li>Peer P2P (local WiFi sharing)</li>
+        </ul>
+        <a href="https://buy.polar.sh/polar_cl_XPaIyA5S6Ep8EWBOLfJpolpT23sFZGJwWf0OW0zSOhC" class="btn btn-primary" id="developer-buy">Buy Developer</a>
+        <a href="https://buy.polar.sh/polar_cl_aZvzaZbiysPUFBwU1ZdQuV5HkVzv2oUC6PQUp0G1vXm" class="trial-link" id="developer-trial">Start 7-day free trial</a>
+      </div>
+
+      <!-- FOUNDER -->
+      <div class="price-card founder">
+        <div class="price-badge gold">Founder</div>
+        <h3>Founder</h3>
+        <div class="price">$420 <span>one-time</span></div>
+        <div class="price-note">GOD_MODE. No limits. No expiration. Ever.</div>
+        <div class="platform-toggle">
+          <button class="platform-btn active" onclick="setPlatform(this,'founder','mobile')">Mobile</button>
+          <button class="platform-btn" onclick="setPlatform(this,'founder','pc')">PC</button>
+        </div>
+        <ul>
+          <li>Everything in Developer</li>
+          <li>GOD_MODE — all features unlocked</li>
+          <li>Axiom Passport (cryptographic ownership)</li>
+          <li>Sovereign Bridge (edition upgrades)</li>
+          <li>Logic Ghost (version history overlay)</li>
+          <li>Your name in the Passport, permanently</li>
+          <li>Priority access to every future update</li>
+          <li>Lambda Seal certified (15,540/15,540)</li>
+        </ul>
+        <a href="https://buy.polar.sh/polar_cl_Nx2XTawUaiwITiuPRNIMaJtxH8yugQPcMz5mz15LiS6" class="btn btn-primary" style="background:var(--gold);color:#000;" id="founder-buy">Buy Founder</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════ FOOTER ════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">Axiom <span>Actualities</span></div>
+    <p class="footer-text">
+      Built by Landon Hill &mdash; Axiom Genesis<br>
+      100% local-first. Zero cloud. Zero tracking. Sovereignty grade.
+    </p>
+    <div class="footer-links">
+      <a href="https://polar.sh/axiom-actualities" target="_blank">Polar Store</a>
+      <a href="#pricing">Editions</a>
+      <a href="#features">Features</a>
+    </div>
+    <p class="footer-quote">"A person, who is the ruler of their own life, is ruled by Reason alone." &mdash; Axiom Genesis</p>
+  </div>
+</footer>
+
+<script>
+  // Checkout link mapping
+  const links = {
+    academic: {
+      mobile: {
+        buy: 'https://buy.polar.sh/polar_cl_egS16BXid2sR5KQeIpdKR8Kg4rXdDoXhQozAX3WPZPY',
+        trial: 'https://buy.polar.sh/polar_cl_OjonSq6o6i4Mi8DH0CTUzQiWswNCrLReZQDt726RWJ6'
+      },
+      pc: {
+        buy: 'https://buy.polar.sh/polar_cl_tzsogUuvBKJzuCCbZJyglKZNkGYxb0MgaPWpi4IqJ5E',
+        trial: 'https://buy.polar.sh/polar_cl_6ccjnt7jx2bv1W4S9KXX82G10CNybHbsF7VtR39nx1w'
+      }
+    },
+    developer: {
+      mobile: {
+        buy: 'https://buy.polar.sh/polar_cl_XPaIyA5S6Ep8EWBOLfJpolpT23sFZGJwWf0OW0zSOhC',
+        trial: 'https://buy.polar.sh/polar_cl_aZvzaZbiysPUFBwU1ZdQuV5HkVzv2oUC6PQUp0G1vXm'
+      },
+      pc: {
+        buy: 'https://buy.polar.sh/polar_cl_bTGVIPk97ZFv6B8iK3eYk2aTsMiTDQqAjyi8n3KE79b',
+        trial: 'https://buy.polar.sh/polar_cl_jRWUKiwTYOBYW94IVOjAII7viGg7UZxOeozJn1XWHRc'
+      }
+    },
+    founder: {
+      mobile: {
+        buy: 'https://buy.polar.sh/polar_cl_Nx2XTawUaiwITiuPRNIMaJtxH8yugQPcMz5mz15LiS6'
+      },
+      pc: {
+        buy: 'https://buy.polar.sh/polar_cl_zCjd3tBrdBpVn4yc8P7KJrxAOCeGszI1unCXB4U6vKh'
+      }
+    }
+  };
+
+  function setPlatform(btn, edition, platform) {
+    // Update toggle UI
+    const toggle = btn.parentElement;
+    toggle.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Update buy link
+    const buyEl = document.getElementById(edition + '-buy');
+    if (buyEl && links[edition][platform]) {
+      buyEl.href = links[edition][platform].buy;
+    }
+
+    // Update trial link
+    const trialEl = document.getElementById(edition + '-trial');
+    if (trialEl && links[edition][platform] && links[edition][platform].trial) {
+      trialEl.href = links[edition][platform].trial;
+    }
+  }
+
+  // Close mobile menu on link click
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.addEventListener('click', () => {
+      document.querySelector('.nav-links').classList.remove('open');
+    });
+  });
+</script>
+
+</body>
+</html>
