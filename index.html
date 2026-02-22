@@ -67,10 +67,12 @@
       font-weight: 800;
       font-size: 1.1rem;
       letter-spacing: -0.02em;
-      color: var(--text);
       text-decoration: none;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .nav-logo span { color: var(--purple); }
     .nav-links { display: flex; gap: 2rem; align-items: center; }
     .nav-links a {
       color: var(--text-dim);
@@ -493,8 +495,12 @@
       font-weight: 800;
       font-size: 1.1rem;
       margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
     }
-    .footer-brand span { color: var(--purple); }
     .footer-text {
       color: var(--text-dim);
       font-size: 0.85rem;
